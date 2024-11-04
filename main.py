@@ -30,8 +30,22 @@ def generate_password():
 
     pyperclip.copy(new_password) # to copy the password into the clipboard
 
-
-
+# Search the data 
+def search_password():
+    website_name = website.get()
+    try:
+        with open('data.json', 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        messagebox.showerror(title='Error!', message='No Data File Found')
+    else:
+        if website_name in data:
+            website_email = data[website_name]['Email']
+            website_password = data[website_name]['Password']
+            messagebox.showinfo(title='Here is Your Information', message=f'Email: {website_email}\n Password: {website_password}')
+            website.delete(0, END)
+        else:
+            messagebox.showerror(title='Error!', message=f"The Website {website_name} doesn't exist in file")
 
 # Save data
 def save_data():
@@ -42,11 +56,17 @@ def save_data():
     if len(website_name) == 0 or len(password_data) == 0:
         messagebox.showinfo(title='Oops', message="Please Don't leave any field empty")
     else:
-        is_ok = messagebox.askokcancel(title='Check the Fields', message=f'Please check if the information you provided'
-                                                                         f' is Okay. \nWebsite: {website_name}\n Password: {password_data}\n Email: {email_data}')
-        if is_ok:
-            with open('data.txt', mode='a') as file:
-                file.write(f'{website_name} | {email_data} | {password_data} \n')
+        try:
+            with open('data.json', 'r') as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            with open('data.json', mode='w') as file:
+                json.dump(new_data, file, indent=4)
+        else:
+            data.update(new_data)
+            with open('data.json', mode='w') as file:
+                json.dump(data, file, indent=4)
+        finally:
             website.delete(0, END)
             password.delete(0, END)
 
@@ -59,6 +79,8 @@ label1.grid(column=1, row=2)
 website = Entry(width=35)
 website.focus()
 website.grid(column=2, row=2, columnspan=2)
+search = Button(text='Search', command=search_password)
+search.grid(column = 3, row=2)
 
 label2 = Label(text='Email/Username:')
 label2.grid(column=1, row=3)
